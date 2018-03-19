@@ -32,6 +32,8 @@ The colour to remove, in the form R,G,B.
 
 Minimum number of connected pixels that must match the specified colour before an area will be removed. For example, if set to 3, areas of only 1 or 2 pixels of the specified colour will be preserved.
 
+Pixels are considered to be "connected" if they are orthogonally adjacent.
+
 ### Example
 
     java main.ColourRemover images 64,128,64 10

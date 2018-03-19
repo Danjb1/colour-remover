@@ -51,18 +51,28 @@ public class ColourRemover {
 
         // The top-left colour is assumed to be the background colour
         int background = image.getRGB(0, 0);
+
+        Set<ImagePixel> processedPixels = new HashSet<>();
         
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
+
+                ImagePixel thisPixel = new ImagePixel(x, y);
                 
-                if (image.getRGB(x, y) != colourToRemove) {
+                if (image.getRGB(x, y) != colourToRemove || 
+                        processedPixels.contains(thisPixel)) {
+                    // Pixel is not the colour we are looking for, or has
+                    // already been processed
                     continue;
                 }
                 
                 // Find connected pixels of the desired colour
                 Set<ImagePixel> connectedPixels = new HashSet<>();
-                connectedPixels.add(new ImagePixel(x, y));
+                connectedPixels.add(thisPixel);
                 findConnectedPixels(image, x, y, connectedPixels);
+
+                // Remember pixels we have just processed
+                processedPixels.addAll(connectedPixels);
                 
                 if (connectedPixels.size() < threshold) {
                     // This area is too small for us to remove
