@@ -168,9 +168,6 @@ public class ColourRemover {
             
             int threshold = Integer.parseInt(args[2]);
             
-            // Read and parse background texture
-            System.out.println("Reading background texture");
-            
             colRemover = new ColourRemover(colourToRemove, threshold);
 
         } catch (NumberFormatException ex) {
