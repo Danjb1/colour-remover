@@ -1,6 +1,7 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -45,13 +46,23 @@ public class ColourRemover {
      * meet the required threshold for size.
      * 
      * @param image
-     * @return
+     * @return Array of 2 images; the original image with the colour removed,
+     * and an image containing just the removed pixels.
      */
-    private BufferedImage process(BufferedImage image) {
+    private BufferedImage[] process(BufferedImage image) {
 
         // The top-left colour is assumed to be the background colour
         int background = image.getRGB(0, 0);
 
+        // Create a blank image to hold the removed pixels
+        BufferedImage removedPixels = new BufferedImage(
+                image.getWidth(),
+                image.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics g = removedPixels.getGraphics();
+        g.setColor(new Color(background));
+        g.fillRect(0, 0, image.getWidth(), image.getHeight());
+        
         Set<ImagePixel> processedPixels = new HashSet<>();
         
         for (int y = 0; y < image.getHeight(); y++) {
@@ -85,11 +96,15 @@ public class ColourRemover {
                 // Remove all connected pixels
                 for (ImagePixel px : connectedPixels) {
                     image.setRGB(px.x, px.y, background);
+                    removedPixels.setRGB(px.x, px.y, colourToRemove);
                 }
             }
         }
         
-        return ImageUtils.crop(image, background);
+        return new BufferedImage[] {
+                image,
+                removedPixels
+        };
     }
     
     /**
@@ -218,7 +233,7 @@ public class ColourRemover {
             
             // Remove the colour
             System.out.println("Processing...");
-            image = colRemover.process(image);
+            BufferedImage[] processedImages = colRemover.process(image);
             
             // Ensure "out" directory exists
             new File("out").mkdir();
@@ -232,10 +247,9 @@ public class ColourRemover {
                 filename = filename.substring(0, pos);
             }
                 
-            filename = "out/" + filename + ".png";
-                
             try {
-                ImageUtils.saveImage(image, filename);
+                ImageUtils.saveImage(processedImages[0], "out/" + filename + ".png");
+                ImageUtils.saveImage(processedImages[1], "out/" + filename + "_s.png");
             } catch (IOException e) {
                 System.err.println("Unable to save image");
                 e.printStackTrace();
